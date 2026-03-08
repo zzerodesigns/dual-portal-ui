@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DUAL-PORTAL • Concept Review</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gem-blue: #00f0ff;
+            --gem-red: #ff0055;
+            --ui-bg: #0a0b10;
+            --ui-panel: rgba(20, 22, 28, 0.8);
+            --ui-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background-color: var(--ui-bg);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Prevent scrolling */
+        }
+
+        .font-tech {
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+        }
+
+        /* Slider Container */
+        .comparison-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .image-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            transition: transform 0.1s ease-out; /* Smooth zoom */
+            transform-origin: center center;
+        }
+
+        .image-layer.right {
+            z-index: 1;
+        }
+
+        .image-layer.left {
+            z-index: 2;
+            width: 50%; /* Initial state */
+            border-right: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* The Slider Handle */
+        .slider-handle {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%; /* Initial state */
+            width: 4px;
+            background: rgba(255, 255, 255, 0.0); /* Invisible touch target */
+            z-index: 20;
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: translateX(-50%);
+        }
+
+        /* The Visible Line */
+        .slider-line {
+            position: absolute;
+            top: 10%;
+            bottom: 10%;
+            width: 2px;
+            background: linear-gradient(to bottom, 
+                transparent, 
+                rgba(0, 240, 255, 0.5) 20%, 
+                rgba(255, 255, 255, 0.8) 50%, 
+                rgba(255, 0, 85, 0.5) 80%, 
+                transparent
+            );
+            pointer-events: none;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        /* The Gem Control */
+        .gem-control {
+            width: 64px;
+            height: 64px;
+            position: relative;
+            pointer-events: none; /* Let clicks pass to handle */
+            filter: drop-shadow(0 0 15px rgba(0,0,0,0.5));
+            transition: transform 0.1s ease;
+        }
+
+        .slider-handle:active .gem-control {
+            transform: scale(1.1);
+        }
+
+        /* Gem SVG Styles */
+        .gem-svg {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .gem-left { fill: url(#grad-blue); }
+        .gem-right { fill: url(#grad-red); }
+        .gem-border { stroke: rgba(255,255,255,0.8); stroke-width: 1; fill: none; }
+
+        /* Glassmorphism Panels */
+        .glass-panel {
+            background: rgba(15, 15, 20, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Navigation Tabs */
+        .nav-tab {
+            position: relative;
+            color: rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+        .nav-tab:hover {
+            color: white;
+            background: rgba(255,255,255,0.05);
+        }
+        .nav-tab.active {
+            color: white;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            background: rgba(255,255,255,0.1);
+        }
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 2px;
+            background: #00f0ff;
+            box-shadow: 0 0 8px #00f0ff;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        /* Label Tags */
+        .version-tag {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            letter-spacing: 1px;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Animations */
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(0, 240, 255, 0.2); }
+            50% { box-shadow: 0 0 20px rgba(0, 240, 255, 0.5); }
+        }
+
+        .glow-effect {
+            animation: pulse-glow 3s infinite;
+        }
+
+        /* Pop-up Animation */
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.9) translateY(10px); }
+            60% { opacity: 1; transform: scale(1.05) translateY(-2px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        @keyframes popOut {
+            0% { opacity: 1; transform: scale(1) translateY(0); }
+            40% { opacity: 1; transform: scale(1.05) translateY(-2px); }
+            100% { opacity: 0; transform: scale(0.9) translateY(10px); }
+        }
+        
+        .animate-pop {
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .animate-pop-out {
+            animation: popOut 0.3s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            transition: opacity 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-black text-white h-screen w-screen overflow-hidden select-none" ondragstart="return false;">
+
+    <!-- Main App Container -->
+    <div class="relative w-full h-screen bg-black overflow-hidden flex flex-col">
+        
+        <!-- Header -->
+        <header class="absolute top-0 left-0 w-full z-30 px-6 py-4 flex justify-between items-center pointer-events-none">
+            <!-- Left: Title -->
+            <div class="flex items-center gap-4 pointer-events-auto relative z-40">
+                <button onclick="openMenu('gridMenu', this)" class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors text-white/80 active:scale-95 transition-transform">
+                    <i data-lucide="grid-3x3" class="w-6 h-6"></i>
+                </button>
+                <div class="hidden md:flex flex-col">
+                    <h1 class="text-white font-tech font-bold text-2xl tracking-widest uppercase leading-none">
+                        DUAL-PORTAL
+                    </h1>
+                    <span class="text-white/40 font-tech font-medium tracking-[0.2em] text-sm mt-1">CONCEPT REVIEW</span>
+                </div>
+            </div>
+
+            <!-- Center: Navigation (Absolute Centered) -->
+            <div class="absolute left-1/2 top-4 transform -translate-x-1/2 pointer-events-auto z-30 w-full flex justify-center">
+                <!-- Desktop Nav -->
+                <nav id="projectNav" class="glass-panel rounded-full p-1 hidden md:flex items-center">
+                    <!-- Projects injected via JS -->
+                </nav>
+
+                <!-- Mobile Nav (Cycle Project) -->
+                <button onclick="loadProject((currentProjectIndex + 1) % projects.length)" class="md:hidden glass-panel rounded-full px-6 h-10 font-tech font-semibold tracking-wider text-sm flex items-center gap-2 active:scale-95 transition-transform">
+                    <span id="mobileModeLabel">CYBERPUNK CITY</span>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-white/50"></i>
+                </button>
+            </div>
+
+            <!-- Right: User Actions -->
+            <div class="flex items-center gap-4 pointer-events-auto relative z-40">
+                <button onclick="openMenu('settingsMenu', this)" class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors text-white/80 active:scale-95 transition-transform">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                </button>
+                <!-- User Profile Removed -->
+            </div>
+        </header>
+
+        <!-- Comparison Area -->
+        <main class="flex-1 relative w-full h-full comparison-container bg-black" id="comparisonContainer">
+            
+            <!-- Right Layer (Fire - Background) -->
+            <div class="image-layer right">
+                <div class="w-full h-full relative flex items-center justify-center overflow-hidden">
+                    <img id="imgRight" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2560&auto=format&fit=crop" class="w-full h-full object-cover opacity-90 transition-transform duration-200 ease-out will-change-transform pointer-events-none select-none" alt="Fire Version">
+                    
+                    <!-- Label for Right Side (Inside container) -->
+                    <div class="absolute bottom-32 right-10 z-10 pointer-events-auto">
+                        <div id="rightTag" class="version-tag border-l-4 border-l-red-500 shadow-[0_0_15px_rgba(255,0,0,0.3)] hover:bg-white/10 cursor-pointer transition-all duration-300" onclick="openMenu('fireDetails', this)">
+                            <span id="rightTagText">Version: Neon Red_v2.0</span> <i data-lucide="info" class="inline w-3 h-3 ml-1 mb-0.5"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 pointer-events-none"></div>
+            </div>
+
+            <!-- Left Layer (Ice - Foreground - Masked) -->
+            <div class="image-layer left overflow-hidden" id="leftLayer" style="width: 50%;">
+                <!-- Inner container fixed to viewport width to prevent image squishing -->
+                <div class="w-screen h-full relative transform translate-x-0 flex items-center justify-center overflow-hidden">
+                    <img id="imgLeft" src="https://images.unsplash.com/photo-1515462277126-2dd0c162007a?q=80&w=2560&auto=format&fit=crop" class="w-full h-full object-cover transition-transform duration-200 ease-out will-change-transform pointer-events-none select-none" alt="Ice Version">
+                    
+                    <!-- Label for Left Side (Inside container) -->
+                    <div class="absolute bottom-32 left-10 z-10 pointer-events-auto">
+                        <div id="leftTag" class="version-tag border-l-4 border-l-cyan-400 shadow-[0_0_15px_rgba(0,240,255,0.3)] hover:bg-white/10 cursor-pointer transition-all duration-300" onclick="openMenu('iceDetails', this)">
+                            <span id="leftTagText">Version: Cyber Blue_v2.0</span> <i data-lucide="info" class="inline w-3 h-3 ml-1 mb-0.5"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 pointer-events-none"></div>
+            </div>
+
+            <!-- Slider Handle -->
+            <div class="slider-handle" id="sliderHandle">
+                <div class="slider-line"></div>
+                
+                <!-- Gem Graphic -->
+                <div class="gem-control">
+                    <svg viewBox="0 0 100 100" class="gem-svg">
+                        <defs>
+                            <linearGradient id="grad-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#a0f0ff;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0080ff;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="grad-red" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#ff8080;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#ff0000;stop-opacity:1" />
+                            </linearGradient>
+                            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="2" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
+                        
+                        <!-- Diamond Shape Split -->
+                        <path d="M50 10 L85 50 L50 90 L50 10 Z" class="gem-right" />
+                        <path d="M50 10 L15 50 L50 90 L50 10 Z" class="gem-left" />
+                        
+                        <!-- Inner Facets for 3D look -->
+                        <path d="M50 10 L50 90" stroke="rgba(255,255,255,0.5)" stroke-width="1" />
+                        <path d="M15 50 L85 50" stroke="rgba(255,255,255,0.3)" stroke-width="0.5" />
+                        
+                        <!-- Outer Border -->
+                        <path d="M50 10 L85 50 L50 90 L15 50 Z" class="gem-border" />
+                    </svg>
+                    
+                    <!-- Drag Label -->
+                    <div class="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 whitespace-nowrap opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none">
+                        <span class="text-[10px] font-tech tracking-widest text-white/70 uppercase bg-black/50 px-2 py-1 rounded">Drag to Compare</span>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Footer Controls -->
+        <footer class="absolute bottom-0 left-0 w-full z-30 px-8 py-6 pointer-events-none">
+            <div class="relative w-full flex items-end justify-center">
+                
+                <!-- Zoom Control (Left) -->
+                <div class="absolute left-0 bottom-0 glass-panel rounded-full px-1 py-1 md:px-2 md:py-0 w-10 md:w-auto h-auto md:h-12 flex flex-col md:flex-row items-center gap-1 md:gap-0 pointer-events-auto">
+                    <!-- Plus Button (Top on mobile, Right on Desktop) -->
+                    <button onmousedown="startZoomLoop(0.05)" onmouseup="stopZoomLoop()" onmouseleave="stopZoomLoop()" ontouchstart="startZoomLoop(0.05)" ontouchend="stopZoomLoop()" class="text-white/60 hover:text-white transition-colors active:scale-90 w-full h-8 md:h-full md:w-8 flex items-center justify-center px-0 md:order-4 select-none"><i data-lucide="plus" class="w-4 h-4"></i></button>
+
+                    <!-- Desktop Track (Middle on Desktop) -->
+                    <div id="zoomTrack" class="w-32 h-full relative cursor-pointer group hidden md:flex items-center md:order-2 md:mx-2">
+                        <div class="w-full h-1 relative">
+                            <div class="absolute inset-0 bg-white/10 rounded-full overflow-hidden">
+                                <div id="zoomBar" class="absolute top-0 left-0 h-full w-0 bg-blue-400 rounded-full transition-all duration-200" style="width: 0%"></div>
+                            </div>
+                            <div id="zoomKnob" class="absolute top-1/2 left-0 w-3 h-3 -mt-1.5 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)] transform -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200" style="left: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Mobile/Desktop Label (Middle on Desktop) -->
+                    <span id="zoomLabel" class="text-[10px] font-mono text-white/50 w-10 text-center hidden md:block md:order-3">100%</span>
+
+                    <!-- Minus Button (Bottom on mobile, Left on Desktop) -->
+                    <button onmousedown="startZoomLoop(-0.05)" onmouseup="stopZoomLoop()" onmouseleave="stopZoomLoop()" ontouchstart="startZoomLoop(-0.05)" ontouchend="stopZoomLoop()" class="text-white/60 hover:text-white transition-colors active:scale-90 w-full h-8 md:h-full md:w-8 flex items-center justify-center px-0 md:order-1 select-none"><i data-lucide="minus" class="w-4 h-4"></i></button>
+                </div>
+
+                <!-- Main Action (Center) -->
+                <button onclick="openMenu('detailsModal', this)" class="pointer-events-auto glass-panel px-5 md:px-8 h-10 md:h-12 rounded-full border border-blue-500/30 hover:bg-blue-500/10 hover:border-blue-400 transition-all group active:scale-95 flex items-center justify-center">
+                    <span class="font-tech font-bold tracking-widest text-sm text-blue-100 group-hover:text-white group-hover:drop-shadow-[0_0_8px_rgba(0,200,255,0.8)] transition-all">VIEW DETAILS</span>
+                </button>
+
+                <!-- Share Actions (Right) -->
+                <div class="absolute right-0 bottom-0 flex gap-3 pointer-events-auto">
+                    <!-- Desktop Buttons -->
+                    <div class="hidden md:flex gap-3">
+                        <button onclick="openMenu('downloadMenu', this)" class="glass-panel w-10 h-10 md:w-12 md:h-12 rounded-full hover:bg-white/10 transition-colors text-white/80 active:scale-95 flex items-center justify-center">
+                            <i data-lucide="download" class="w-5 h-5"></i>
+                        </button>
+                        <button onclick="openMenu('shareMenu', this)" class="glass-panel w-10 h-10 md:w-12 md:h-12 rounded-full hover:bg-white/10 transition-colors text-white/80 active:scale-95 flex items-center justify-center">
+                            <i data-lucide="share-2" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <!-- Mobile Action Button -->
+                    <button onclick="openMenu('mobileActions', this)" class="md:hidden glass-panel w-10 h-10 md:w-12 md:h-12 rounded-full hover:bg-white/10 transition-colors text-white/80 active:scale-95 flex items-center justify-center">
+                        <i data-lucide="more-vertical" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Generic Pop-up Menu Template (Hidden by default) -->
+        <div id="popupMenu" class="fixed inset-0 z-50 hidden pointer-events-none flex items-center justify-center">
+            <!-- Backdrop -->
+            <div id="menuBackdrop" class="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto transition-opacity duration-300" onclick="closeMenu()"></div>
+            
+            <!-- Menu Content -->
+            <div id="menuContent" class="relative glass-panel rounded-2xl p-6 min-w-[320px] max-w-md pointer-events-auto transform transition-all">
+                <!-- Dynamic Content Injected Here -->
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        console.log('App initializing...');
+
+        // Global Error Handler
+        window.onerror = function(msg, url, line, col, error) {
+            console.error('Global Error:', msg, 'at', line, ':', col);
+        };
+
+        // Safe Icon Creation Helper
+        function safeCreateIcons() {
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons();
+            } else {
+                console.warn('Lucide icons not loaded yet');
+            }
+        }
+
+        // Main Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM ready');
+            safeCreateIcons();
+            renderProjectTabs();
+            // Initialize other logic if needed
+        });
+
+        // --- DATA & STATE ---
+        const projects = [
+            {
+                id: 'abstract',
+                name: 'ABSTRACT 3D',
+                desc: 'Cyber vs Abstract',
+                leftImg: 'https://images.unsplash.com/photo-1515462277126-2dd0c162007a?q=80&w=2560&auto=format&fit=crop',
+                rightImg: 'https://images.unsplash.com/photo-1633596683562-4a47eb4983c5?q=80&w=2560&auto=format&fit=crop',
+                leftLabel: 'Version: Cyber Blue_v2.0',
+                rightLabel: 'Version: Abstract_v1.0',
+                leftColor: '#00f0ff',
+                rightColor: '#bd00ff'
+            },
+            {
+                id: 'nature',
+                name: 'NATURE CONTRAST',
+                desc: 'Winter vs Summer',
+                leftImg: 'https://images.unsplash.com/photo-1476820865390-c52aeebb9891?q=80&w=2560&auto=format&fit=crop',
+                rightImg: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2560&auto=format&fit=crop',
+                leftLabel: 'Season: Winter_Final',
+                rightLabel: 'Season: Summer_Draft',
+                leftColor: '#0088ff',
+                rightColor: '#ffaa00'
+            },
+            {
+                id: 'nightscape',
+                name: 'NIGHTSCAPE',
+                desc: 'City Day vs Night',
+                leftImg: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=2560&auto=format&fit=crop',
+                rightImg: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?q=80&w=2560&auto=format&fit=crop',
+                leftLabel: 'Time: Day_Clear',
+                rightLabel: 'Time: Night_Lights',
+                leftColor: '#ffd700',
+                rightColor: '#4b0082'
+            }
+        ];
+
+        let currentProjectIndex = 0;
+        let currentZoom = 1.0;
+        const MIN_ZOOM = 1.0;
+        const MAX_ZOOM = 3.0;
+
+        // --- SLIDER LOGIC ---
+        const container = document.getElementById('comparisonContainer');
+        const leftLayer = document.getElementById('leftLayer');
+        const handle = document.getElementById('sliderHandle');
+        
+        let isDragging = false;
+
+        if (container && handle && leftLayer) {
+            handle.addEventListener('mousedown', startDrag);
+            window.addEventListener('mouseup', stopDrag);
+            window.addEventListener('mousemove', drag);
+            handle.addEventListener('touchstart', startDrag, { passive: false });
+            window.addEventListener('touchend', stopDrag);
+            window.addEventListener('touchmove', drag, { passive: false });
+        } else {
+            console.error('Critical slider elements missing');
+        }
+
+        function startDrag(e) {
+            isDragging = true;
+            handle.style.cursor = 'grabbing';
+            e.preventDefault();
+        }
+
+        function stopDrag() {
+            isDragging = false;
+            handle.style.cursor = 'col-resize';
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            updateSliderPosition(e);
+        }
+
+        container.addEventListener('click', (e) => {
+            if (e.target.closest('.slider-handle') || e.target.closest('.version-tag') || e.target.closest('.pointer-events-auto')) return;
+            updateSliderPosition(e, true);
+        });
+
+        function updateSliderPosition(e, animate = false) {
+            const rect = container.getBoundingClientRect();
+            let clientX = e.clientX;
+            if (e.type === 'touchmove') clientX = e.touches[0].clientX;
+
+            let x = clientX - rect.left;
+            let percent = (x / rect.width) * 100;
+            percent = Math.max(0, Math.min(100, percent));
+
+            if (animate) {
+                leftLayer.style.transition = 'width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                handle.style.transition = 'left 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                setTimeout(() => {
+                    leftLayer.style.transition = 'none';
+                    handle.style.transition = 'none';
+                }, 300);
+            }
+
+            leftLayer.style.width = `${percent}%`;
+            handle.style.left = `${percent}%`;
+        }
+
+        // --- ZOOM LOGIC ---
+        let zoomInterval = null;
+
+        function startZoomLoop(delta) {
+            if (zoomInterval) return;
+            adjustZoom(delta); // Initial click
+            zoomInterval = setInterval(() => {
+                adjustZoom(delta);
+            }, 50); // Fast repeat
+        }
+
+        function stopZoomLoop() {
+            if (zoomInterval) {
+                clearInterval(zoomInterval);
+                zoomInterval = null;
+            }
+        }
+
+        function adjustZoom(delta) {
+            currentZoom += delta;
+            currentZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, currentZoom));
+            // Round to 2 decimals to avoid float drift
+            currentZoom = Math.round(currentZoom * 100) / 100;
+            updateZoomUI();
+        }
+
+        function updateZoomUI() {
+            const imgRight = document.getElementById('imgRight');
+            const imgLeft = document.getElementById('imgLeft');
+            const zoomBar = document.getElementById('zoomBar');
+            const zoomKnob = document.getElementById('zoomKnob');
+            const zoomLabel = document.getElementById('zoomLabel');
+
+            // Apply scale to both images
+            if (imgRight) imgRight.style.transform = `scale(${currentZoom})`;
+            if (imgLeft) imgLeft.style.transform = `scale(${currentZoom})`;
+
+            // Update UI controls
+            const percentage = ((currentZoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)) * 100;
+            if (zoomBar) zoomBar.style.width = `${percentage}%`;
+            if (zoomKnob) zoomKnob.style.left = `${percentage}%`;
+            if (zoomLabel) zoomLabel.innerText = `${Math.round(currentZoom * 100)}%`;
+        }
+
+        // Zoom Slider Interaction
+        const zoomControl = document.getElementById('zoomTrack');
+        const zoomKnob = document.getElementById('zoomKnob');
+        let isZoomDragging = false;
+
+        if (zoomControl) {
+            zoomControl.addEventListener('mousedown', startZoomDrag);
+            window.addEventListener('mouseup', stopZoomDrag);
+            window.addEventListener('mousemove', zoomDrag);
+            
+            zoomControl.addEventListener('touchstart', startZoomDrag, { passive: false });
+            window.addEventListener('touchend', stopZoomDrag);
+            window.addEventListener('touchmove', zoomDrag, { passive: false });
+        }
+
+        function startZoomDrag(e) {
+            isZoomDragging = true;
+            zoomKnob.classList.remove('scale-0');
+            zoomKnob.classList.add('scale-100');
+            zoomDrag(e); // Update immediately on click
+            e.preventDefault();
+        }
+
+        function stopZoomDrag() {
+            if (isZoomDragging) {
+                isZoomDragging = false;
+                // Only hide if not hovering (let CSS handle hover state)
+                zoomKnob.classList.remove('scale-100');
+            }
+        }
+
+        function zoomDrag(e) {
+            if (!isZoomDragging) return;
+            
+            const rect = zoomControl.getBoundingClientRect();
+            let clientX = e.clientX;
+            if (e.type === 'touchmove') clientX = e.touches[0].clientX;
+
+            let x = clientX - rect.left;
+            let percent = x / rect.width;
+            percent = Math.max(0, Math.min(1, percent));
+
+            // Calculate zoom from percent
+            currentZoom = MIN_ZOOM + (percent * (MAX_ZOOM - MIN_ZOOM));
+            // Round to 2 decimals
+            currentZoom = Math.round(currentZoom * 100) / 100;
+            updateZoomUI();
+        }
+
+        // --- PROJECT LOGIC ---
+        function loadProject(index) {
+            if (index < 0 || index >= projects.length) return;
+            currentProjectIndex = index;
+            const p = projects[index];
+            
+            // Update Images
+            const imgLeft = document.getElementById('imgLeft');
+            const imgRight = document.getElementById('imgRight');
+            const leftTag = document.getElementById('leftTag');
+            const rightTag = document.getElementById('rightTag');
+            const leftTagText = document.getElementById('leftTagText');
+            const rightTagText = document.getElementById('rightTagText');
+            
+            // 1. Fade out current images to black
+            imgLeft.style.opacity = '0';
+            imgRight.style.opacity = '0';
+            
+            // 2. Preload new images
+            const newLeft = new Image();
+            const newRight = new Image();
+            
+            let loadedCount = 0;
+            const onImageLoad = () => {
+                loadedCount++;
+                if (loadedCount === 2) {
+                    // Both loaded, swap sources
+                    imgLeft.src = p.leftImg;
+                    imgRight.src = p.rightImg;
+                    
+                    // Update Labels
+                    if (leftTagText) leftTagText.innerText = p.leftLabel;
+                    if (rightTagText) rightTagText.innerText = p.rightLabel;
+
+                    // Update Banner Colors (No Glow)
+                    if (leftTag) {
+                        leftTag.style.borderLeftColor = p.leftColor;
+                        leftTag.style.boxShadow = 'none'; // Removed glow
+                    }
+                    if (rightTag) {
+                        rightTag.style.borderLeftColor = p.rightColor;
+                        rightTag.style.boxShadow = 'none'; // Removed glow
+                    }
+                    
+                    // Fade in
+                    // Small delay to ensure DOM update
+                    requestAnimationFrame(() => {
+                        imgLeft.style.opacity = '1';
+                        imgRight.style.opacity = '0.9';
+                    });
+                    
+                    // Show Toast Banner
+                    showToast(`PROJECT LOADED: ${p.name}`);
+                }
+            };
+            
+            newLeft.onload = onImageLoad;
+            newRight.onload = onImageLoad;
+            
+            // Start loading
+            newLeft.src = p.leftImg;
+            newRight.src = p.rightImg;
+
+            updateProjectTabs();
+        }
+
+        function renderProjectTabs() {
+            const nav = document.getElementById('projectNav');
+            if (nav) {
+                nav.innerHTML = projects.map((p, i) => `
+                    <button onclick="loadProject(${i})" 
+                        class="nav-tab relative px-6 py-2 rounded-full font-tech font-semibold tracking-wider text-sm whitespace-nowrap transition-all duration-300 ${i === currentProjectIndex ? 'text-white' : 'text-white/50 hover:text-white/80'}"
+                        data-index="${i}">
+                        <span class="relative z-10">${p.name}</span>
+                        ${i === currentProjectIndex ? '<div class="absolute inset-0 bg-white/10 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.1)] -z-0 animate-fade-in"></div>' : ''}
+                    </button>
+                `).join('');
+            }
+            updateMobileLabel();
+        }
+
+        function updateProjectTabs() {
+            const nav = document.getElementById('projectNav');
+            if (!nav) return;
+
+            // Re-render to update active state and animation
+            renderProjectTabs();
+        }
+
+        function updateMobileLabel() {
+            const mobileLabel = document.getElementById('mobileModeLabel');
+            if (mobileLabel) {
+                mobileLabel.innerText = projects[currentProjectIndex].name;
+            }
+        }
+
+        // --- MENU SYSTEM ---
+        const menuData = {
+            gridMenu: {
+                title: "Project Library",
+                icon: "grid-3x3",
+                items: [
+                    { 
+                        icon: "folder-open", 
+                        label: "Open Project", 
+                        desc: "Browse image sets",
+                        subItems: [
+                            { icon: "zap", label: "Cyberpunk City", desc: "Blue vs Red Neon", action: "loadProject(0); closeMenu()" },
+                            { icon: "mountain", label: "Nature Contrast", desc: "Winter vs Summer", action: "loadProject(1); closeMenu()" },
+                            { icon: "box", label: "Abstract 3D", desc: "Glass vs Metal", action: "loadProject(2); closeMenu()" },
+                            { icon: "upload-cloud", label: "Load from...", desc: "Cloud, Local, or URL", action: "alert('File picker/URL dialog would open here'); closeMenu()" }
+                        ]
+                    },
+                    { icon: "clock", label: "Recent", desc: "View last 5 comparisons" },
+                    { icon: "cloud", label: "Cloud Sync", desc: "Syncing..." }
+                ]
+            },
+            settingsMenu: {
+                title: "Preferences",
+                icon: "settings",
+                items: [
+                    { 
+                        icon: "user", 
+                        label: "User Profile", 
+                        desc: "Account & Billing",
+                        subItems: [
+                            { icon: "user-check", label: "Account", desc: "Pro Plan Active" },
+                            { icon: "credit-card", label: "Billing", desc: "Manage subscription" },
+                            { icon: "log-out", label: "Sign Out", desc: "End session" }
+                        ]
+                    },
+                    { 
+                        icon: "monitor", 
+                        label: "Display", 
+                        desc: "Resolution & Color Profile",
+                        subItems: [
+                            { icon: "monitor", label: "Resolution", desc: "4K (3840x2160)" },
+                            { icon: "sun", label: "Brightness", desc: "80%" },
+                            { icon: "palette", label: "Color Profile", desc: "DCI-P3" }
+                        ]
+                    },
+                    { icon: "keyboard", label: "Shortcuts", desc: "Customize keybinds" },
+                    { icon: "cpu", label: "Performance", desc: "Hardware acceleration: ON" }
+                ]
+            },
+            // User Menu removed from top level as requested
+            downloadMenu: {
+                title: "Export Options",
+                icon: "download",
+                items: [
+                    { icon: "image", label: "Export JPG", desc: "High Quality (90%)" },
+                    { icon: "file-json", label: "Export Report", desc: "PDF with annotations" },
+                    { icon: "layers", label: "Raw Layers", desc: "Download source PSD" }
+                ]
+            },
+            shareMenu: {
+                title: "Share Review",
+                icon: "share-2",
+                items: [
+                    { icon: "link", label: "Copy Link", desc: "Public view link" },
+                    { icon: "mail", label: "Email Invite", desc: "Send to team members" },
+                    { icon: "slack", label: "Slack", desc: "Post to #design-reviews" }
+                ]
+            },
+            mobileActions: {
+                title: "Actions",
+                icon: "more-vertical",
+                items: [
+                    { icon: "download", label: "Export Options", desc: "JPG, PDF, PSD", subItems: [
+                        { icon: "image", label: "Export JPG", desc: "High Quality (90%)" },
+                        { icon: "file-json", label: "Export Report", desc: "PDF with annotations" },
+                        { icon: "layers", label: "Raw Layers", desc: "Download source PSD" }
+                    ]},
+                    { icon: "share-2", label: "Share Review", desc: "Link, Email, Slack", subItems: [
+                        { icon: "link", label: "Copy Link", desc: "Public view link" },
+                        { icon: "mail", label: "Email Invite", desc: "Send to team members" },
+                        { icon: "slack", label: "Slack", desc: "Post to #design-reviews" }
+                    ]}
+                ]
+            },
+            detailsModal: {
+                title: "Concept Details",
+                icon: "file-text",
+                customHtml: `
+                    <div class="space-y-4">
+                        <div class="flex gap-4">
+                            <div class="w-24 h-24 rounded-lg bg-gray-800 bg-cover bg-center shadow-lg" style="background-image: url('https://images.unsplash.com/photo-1518133835878-5a93cc3f89e5?q=80&w=200');"></div>
+                            <div>
+                                <h3 class="text-white font-bold text-lg">Ethereal Guardian</h3>
+                                <p class="text-blue-400 text-sm">v1.3 Final Render</p>
+                                <div class="flex gap-2 mt-2">
+                                    <span class="px-2 py-1 bg-white/10 rounded text-xs text-white/70 hover:text-cyan-400 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.6)] transition-all duration-200 cursor-default">4K</span>
+                                    <span class="px-2 py-1 bg-white/10 rounded text-xs text-white/70 hover:text-cyan-400 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.6)] transition-all duration-200 cursor-default">Octane</span>
+                                    <span class="px-2 py-1 bg-white/10 rounded text-xs text-white/70 hover:text-cyan-400 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.6)] transition-all duration-200 cursor-default">RAW</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3 space-y-2">
+                            <div class="flex justify-between text-sm group cursor-default">
+                                <span class="text-white/50 group-hover:text-white transition-colors">Render Time</span>
+                                <span class="text-white group-hover:text-blue-300 group-hover:drop-shadow-[0_0_8px_rgba(147,197,253,0.5)] transition-all duration-200">4h 12m</span>
+                            </div>
+                            <div class="flex justify-between text-sm group cursor-default">
+                                <span class="text-white/50 group-hover:text-white transition-colors">Poly Count</span>
+                                <span class="text-white group-hover:text-blue-300 group-hover:drop-shadow-[0_0_8px_rgba(147,197,253,0.5)] transition-all duration-200">12.4M</span>
+                            </div>
+                            <div class="flex justify-between text-sm group cursor-default">
+                                <span class="text-white/50 group-hover:text-white transition-colors">Author</span>
+                                <span class="text-white group-hover:text-blue-300 group-hover:drop-shadow-[0_0_8px_rgba(147,197,253,0.5)] transition-all duration-200">Sarah Jenkins</span>
+                            </div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <p class="text-white/70 text-sm leading-relaxed cursor-default">
+                                <span class="hover:text-white hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] transition-all duration-200">Updated subsurface scattering on the ice crystals to improve light refraction.</span> 
+                                <span class="hover:text-white hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] transition-all duration-200">Fire particle density increased by 15% in the background layer.</span> 
+                                <span class="hover:text-white hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] transition-all duration-200">Color grading adjusted for higher contrast in shadow areas.</span>
+                            </p>
+                        </div>
+                        <button id="approveBtn" onclick="approveVersion(this)" class="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-semibold transition-all duration-300 flex items-center justify-center gap-2 relative overflow-hidden">
+                            <span>Approve Version</span>
+                        </button>
+                    </div>
+                `
+            },
+            fireDetails: {
+                title: "Layer: Fire (Background)",
+                icon: "flame",
+                customHtml: `
+                    <div class="space-y-3">
+                        <p class="text-white/80 text-sm hover:text-white hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] transition-all cursor-default">Base atmospheric layer featuring volumetric fog and particle emitters.</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="bg-white/5 p-2 rounded group cursor-default">
+                                <div class="text-xs text-white/50 group-hover:text-white transition-colors">Temperature</div>
+                                <div class="text-red-400 font-mono group-hover:text-red-300 group-hover:drop-shadow-[0_0_8px_rgba(248,113,113,0.6)] transition-all">3200K</div>
+                            </div>
+                            <div class="bg-white/5 p-2 rounded group cursor-default">
+                                <div class="text-xs text-white/50 group-hover:text-white transition-colors">Exposure</div>
+                                <div class="text-white font-mono group-hover:text-blue-300 group-hover:drop-shadow-[0_0_8px_rgba(147,197,253,0.6)] transition-all">+0.8 EV</div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            iceDetails: {
+                title: "Layer: Ice (Foreground)",
+                icon: "snowflake",
+                customHtml: `
+                    <div class="space-y-3">
+                        <p class="text-white/80 text-sm hover:text-white hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] transition-all cursor-default">Hero character mesh with crystalline shader network.</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="bg-white/5 p-2 rounded group cursor-default">
+                                <div class="text-xs text-white/50 group-hover:text-white transition-colors">Refraction</div>
+                                <div class="text-cyan-400 font-mono group-hover:text-cyan-300 group-hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.6)] transition-all">1.31 IOR</div>
+                            </div>
+                            <div class="bg-white/5 p-2 rounded group cursor-default">
+                                <div class="text-xs text-white/50 group-hover:text-white transition-colors">Roughness</div>
+                                <div class="text-white font-mono group-hover:text-blue-300 group-hover:drop-shadow-[0_0_8px_rgba(147,197,253,0.6)] transition-all">0.05</div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            }
+        };
+
+        let currentMenuStack = [];
+
+        function openMenu(menuId, triggerElement) {
+            const menu = document.getElementById('popupMenu');
+            const content = document.getElementById('menuContent');
+            const data = menuData[menuId];
+
+            if (!data) return;
+
+            currentMenuStack = []; // Reset stack
+            renderMenuContent(data);
+            
+            // Show Menu
+            menu.classList.remove('hidden');
+            content.classList.remove('animate-pop'); // Reset animation
+            void content.offsetWidth; // Trigger reflow
+            content.classList.add('animate-pop');
+            
+            safeCreateIcons();
+        }
+
+        function renderMenuContent(data, isSubmenu = false) {
+            const content = document.getElementById('menuContent');
+            
+            // Build HTML
+            let html = `
+                <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+                    <div class="flex items-center gap-3">
+                        ${isSubmenu ? `
+                            <button onclick="goBack()" class="p-2 -ml-2 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors">
+                                <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                            </button>
+                        ` : `
+                            <div class="p-2 bg-blue-500/20 rounded-lg text-blue-400">
+                                <i data-lucide="${data.icon}" class="w-5 h-5"></i>
+                            </div>
+                        `}
+                        <h2 class="text-xl font-bold font-tech tracking-wide">${data.title}</h2>
+                    </div>
+                    <button onclick="closeMenu()" class="text-white/50 hover:text-white transition-colors p-2 -mr-2">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            `;
+
+            if (data.customHtml) {
+                html += data.customHtml;
+            } else {
+                html += `<div class="space-y-2">`;
+                data.items.forEach((item, index) => {
+                    const hasSub = item.subItems && item.subItems.length > 0;
+                    const clickAction = hasSub ? `openSubmenu('${data.title}', ${index})` : '';
+                    
+                    html += `
+                        <button onclick="${clickAction}" class="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors group text-left">
+                            <div class="p-2 bg-white/5 rounded-lg text-white/60 group-hover:text-white group-hover:bg-white/10 transition-colors">
+                                <i data-lucide="${item.icon}" class="w-5 h-5"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-white font-medium text-sm">${item.label}</div>
+                                <div class="text-white/40 text-xs">${item.desc}</div>
+                            </div>
+                            ${hasSub ? `<i data-lucide="chevron-right" class="w-4 h-4 text-white/20 ml-auto group-hover:text-white/60"></i>` : ''}
+                        </button>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            content.innerHTML = html;
+            safeCreateIcons();
+        }
+
+        function openSubmenu(parentTitle, itemIndex) {
+            // Find the item in the current data context
+            // For simplicity, we'll search in menuData values
+            // In a real app, we'd pass the ID or keep state better
+            let parentData = null;
+            for (const key in menuData) {
+                if (menuData[key].title === parentTitle) {
+                    parentData = menuData[key];
+                    break;
+                }
+            }
+            
+            // If not found in top level, check stack (not implemented for deep nesting yet, keeping it simple)
+            if (!parentData && currentMenuStack.length > 0) {
+                 parentData = currentMenuStack[currentMenuStack.length - 1];
+            }
+
+            if (parentData && parentData.items[itemIndex]) {
+                const item = parentData.items[itemIndex];
+                if (item.subItems) {
+                    currentMenuStack.push(parentData);
+                    renderMenuContent({
+                        title: item.label,
+                        icon: item.icon, // Inherit or use item icon
+                        items: item.subItems
+                    }, true);
+                } else if (item.action) {
+                    // Execute action string (simple eval for demo)
+                    try {
+                        const fnName = item.action.split('(')[0];
+                        const args = item.action.match(/\(([^)]+)\)/)[1].replace(/['"]/g, '');
+                        window[fnName](args);
+                        closeMenu();
+                    } catch (e) {
+                        console.error("Action failed", e);
+                    }
+                }
+            }
+        }
+
+        function goBack() {
+            if (currentMenuStack.length > 0) {
+                const prevData = currentMenuStack.pop();
+                renderMenuContent(prevData, currentMenuStack.length > 0);
+            }
+        }
+
+        function approveVersion(btn) {
+            // Animation state
+            btn.innerHTML = `
+                <i data-lucide="check" class="w-5 h-5 animate-bounce"></i>
+                <span>Approved</span>
+            `;
+            btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
+            btn.classList.add('bg-green-500', 'hover:bg-green-400', 'shadow-[0_0_20px_rgba(34,197,94,0.4)]');
+            safeCreateIcons();
+
+            // Close after delay
+            setTimeout(() => {
+                closeMenu();
+            }, 300);
+        }
+
+        function closeMenu(force = false) {
+            const menu = document.getElementById('popupMenu');
+            const content = document.getElementById('menuContent');
+            const backdrop = document.getElementById('menuBackdrop');
+            
+            if (menu.classList.contains('hidden')) return;
+
+            // Add exit animation
+            content.classList.remove('animate-pop');
+            content.classList.add('animate-pop-out');
+            backdrop.classList.add('opacity-0');
+
+            // Wait for animation to finish
+            setTimeout(() => {
+                menu.classList.add('hidden');
+                content.classList.remove('animate-pop-out');
+                backdrop.classList.remove('opacity-0'); // Reset for next open
+                // Reset stack if forced or if we want to clear state
+                if (force) currentMenuStack = [];
+            }, 300);
+        }
+
+        // --- KEYBOARD NAVIGATION ---
+        let escPressStartTime = 0;
+        let escLongPressTimer = null;
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (escPressStartTime === 0) {
+                    escPressStartTime = Date.now();
+                    // Start timer for long press (0.5s)
+                    escLongPressTimer = setTimeout(() => {
+                        closeMenu(true); // Force close all
+                        escPressStartTime = 0; // Reset
+                    }, 500);
+                }
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'Escape') {
+                // Clear the long press timer
+                if (escLongPressTimer) {
+                    clearTimeout(escLongPressTimer);
+                    escLongPressTimer = null;
+                }
+
+                // If keyup happens before 500ms, it's a short press
+                if (escPressStartTime > 0 && Date.now() - escPressStartTime < 500) {
+                    // Check if we are in a submenu
+                    if (currentMenuStack.length > 0) {
+                        goBack();
+                    } else {
+                        closeMenu();
+                    }
+                }
+                escPressStartTime = 0;
+            }
+        });
+
+        // --- UTILS ---
+        function showToast(msg) {
+            const container = document.createElement('div');
+            container.className = 'fixed top-24 left-0 w-full flex justify-center z-50 pointer-events-none';
+            
+            const toast = document.createElement('div');
+            toast.className = 'bg-black/80 text-white px-6 py-3 rounded-full border border-white/10 shadow-xl animate-pop flex items-center gap-3 pointer-events-auto transition-opacity duration-300';
+            toast.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i> <span class="font-tech tracking-wider text-sm">${msg}</span>`;
+            
+            document.body.appendChild(container);
+            container.appendChild(toast);
+            safeCreateIcons();
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => container.remove(), 300);
+            }, 2000);
+        }
+
+    </script>
+</body>
+</html>
